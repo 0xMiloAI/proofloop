@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ProofLoop - Verified work reputation</title>
+    <meta
+      name="description"
+      content="ProofLoop gathers private peer feedback and turns it into a shareable, verified work reputation profile."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #18211f;
+        --muted: #5d6762;
+        --line: #d8ded8;
+        --paper: #f7f7f1;
+        --panel: #ffffff;
+        --mint: #2fbf93;
+        --teal: #0d7f7c;
+        --coral: #f05f4e;
+        --gold: #e6a938;
+        --lav: #7d6fd9;
+        --shadow: 0 24px 70px rgba(31, 47, 42, 0.14);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .page {
+        min-height: 100vh;
+      }
+
+      .nav {
+        align-items: center;
+        display: flex;
+        gap: 24px;
+        justify-content: space-between;
+        margin: 0 auto;
+        max-width: 1160px;
+        padding: 22px 24px;
+      }
+
+      .brand {
+        align-items: center;
+        display: inline-flex;
+        font-weight: 800;
+        gap: 10px;
+        letter-spacing: 0;
+      }
+
+      .mark {
+        background: conic-gradient(from 120deg, var(--teal), var(--mint), var(--gold), var(--coral), var(--teal));
+        border: 2px solid #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(13, 127, 124, 0.22);
+        height: 32px;
+        width: 32px;
+      }
+
+      .nav-links {
+        align-items: center;
+        display: flex;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .button {
+        align-items: center;
+        background: var(--ink);
+        border: 1px solid var(--ink);
+        border-radius: 8px;
+        color: #ffffff;
+        cursor: pointer;
+        display: inline-flex;
+        font-weight: 750;
+        gap: 8px;
+        justify-content: center;
+        min-height: 46px;
+        padding: 0 18px;
+      }
+
+      .button.secondary {
+        background: transparent;
+        color: var(--ink);
+      }
+
+      .hero {
+        display: grid;
+        gap: 36px;
+        grid-template-columns: minmax(0, 0.92fr) minmax(360px, 1.08fr);
+        margin: 0 auto;
+        max-width: 1160px;
+        padding: 46px 24px 64px;
+      }
+
+      .kicker {
+        align-items: center;
+        color: var(--teal);
+        display: inline-flex;
+        font-size: 14px;
+        font-weight: 800;
+        gap: 8px;
+        margin-bottom: 18px;
+      }
+
+      .pulse {
+        background: var(--mint);
+        border-radius: 999px;
+        height: 9px;
+        width: 9px;
+      }
+
+      h1 {
+        font-size: clamp(44px, 7vw, 86px);
+        letter-spacing: 0;
+        line-height: 0.96;
+        margin: 0;
+      }
+
+      .lead {
+        color: var(--muted);
+        font-size: 19px;
+        line-height: 1.6;
+        margin: 24px 0 0;
+        max-width: 610px;
+      }
+
+      .signup {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: 0 12px 40px rgba(31, 47, 42, 0.08);
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr auto;
+        margin-top: 32px;
+        max-width: 560px;
+        padding: 8px;
+      }
+
+      .signup input {
+        border: 0;
+        color: var(--ink);
+        min-width: 0;
+        outline: 0;
+        padding: 0 12px;
+      }
+
+      .hero-notes {
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 14px;
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .preview {
+        align-self: stretch;
+        background: #fbfcf8;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        min-height: 560px;
+        overflow: hidden;
+      }
+
+      .preview-top {
+        align-items: center;
+        border-bottom: 1px solid var(--line);
+        display: flex;
+        justify-content: space-between;
+        padding: 16px 18px;
+      }
+
+      .window-dots {
+        display: flex;
+        gap: 7px;
+      }
+
+      .window-dots span {
+        border-radius: 999px;
+        height: 10px;
+        width: 10px;
+      }
+
+      .window-dots span:nth-child(1) {
+        background: var(--coral);
+      }
+
+      .window-dots span:nth-child(2) {
+        background: var(--gold);
+      }
+
+      .window-dots span:nth-child(3) {
+        background: var(--mint);
+      }
+
+      .preview-body {
+        display: grid;
+        gap: 18px;
+        grid-template-columns: 168px 1fr;
+        padding: 18px;
+      }
+
+      .side {
+        background: #edf3ee;
+        border-radius: 8px;
+        padding: 14px;
+      }
+
+      .avatar {
+        align-items: center;
+        background: linear-gradient(135deg, var(--teal), var(--lav));
+        border-radius: 8px;
+        color: #ffffff;
+        display: flex;
+        font-size: 24px;
+        font-weight: 850;
+        height: 58px;
+        justify-content: center;
+        width: 58px;
+      }
+
+      .tiny {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 10px 0 4px;
+      }
+
+      .name {
+        font-size: 18px;
+        font-weight: 850;
+      }
+
+      .menu {
+        display: grid;
+        gap: 8px;
+        margin-top: 20px;
+      }
+
+      .menu div {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.66);
+        border: 1px solid rgba(216, 222, 216, 0.7);
+        border-radius: 8px;
+        display: flex;
+        font-size: 13px;
+        font-weight: 750;
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .main-panel {
+        display: grid;
+        gap: 16px;
+      }
+
+      .score-row {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: 180px 1fr;
+      }
+
+      .score-card,
+      .insight,
+      .quote-card,
+      .mini-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      .score-card {
+        align-items: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 180px;
+      }
+
+      .score-ring {
+        align-items: center;
+        background: conic-gradient(var(--mint) 0 82%, #e8ece6 82% 100%);
+        border-radius: 999px;
+        display: flex;
+        height: 118px;
+        justify-content: center;
+        width: 118px;
+      }
+
+      .score-ring span {
+        align-items: center;
+        background: #ffffff;
+        border-radius: 999px;
+        display: flex;
+        font-size: 31px;
+        font-weight: 900;
+        height: 88px;
+        justify-content: center;
+        width: 88px;
+      }
+
+      .metric-grid {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .mini-card {
+        padding: 14px;
+      }
+
+      .mini-card b {
+        display: block;
+        font-size: 22px;
+        margin-top: 6px;
+      }
+
+      .bar {
+        background: #e8ece6;
+        border-radius: 999px;
+        height: 8px;
+        margin-top: 12px;
+        overflow: hidden;
+      }
+
+      .bar span {
+        background: var(--teal);
+        display: block;
+        height: 100%;
+      }
+
+      .quote-card {
+        padding: 18px;
+      }
+
+      .quote {
+        font-size: 17px;
+        font-weight: 760;
+        line-height: 1.45;
+        margin: 0;
+      }
+
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .tag {
+        background: #eef4f0;
+        border-radius: 999px;
+        color: #2d5550;
+        font-size: 12px;
+        font-weight: 800;
+        padding: 7px 10px;
+      }
+
+      .insight {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 38px 1fr;
+        padding: 16px;
+      }
+
+      .icon {
+        align-items: center;
+        background: #fff3d9;
+        border-radius: 8px;
+        color: #8b5e00;
+        display: flex;
+        font-weight: 900;
+        height: 38px;
+        justify-content: center;
+        width: 38px;
+      }
+
+      section {
+        border-top: 1px solid var(--line);
+      }
+
+      .band {
+        margin: 0 auto;
+        max-width: 1160px;
+        padding: 68px 24px;
+      }
+
+      .section-head {
+        display: flex;
+        gap: 28px;
+        justify-content: space-between;
+        margin-bottom: 32px;
+      }
+
+      h2 {
+        font-size: clamp(31px, 4vw, 52px);
+        letter-spacing: 0;
+        line-height: 1.02;
+        margin: 0;
+        max-width: 690px;
+      }
+
+      .section-copy {
+        color: var(--muted);
+        line-height: 1.6;
+        margin: 0;
+        max-width: 350px;
+      }
+
+      .steps,
+      .audience {
+        display: grid;
+        gap: 16px;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .step,
+      .audience-card,
+      .faq-item {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 22px;
+      }
+
+      .num {
+        align-items: center;
+        background: var(--ink);
+        border-radius: 8px;
+        color: #ffffff;
+        display: flex;
+        font-weight: 850;
+        height: 34px;
+        justify-content: center;
+        margin-bottom: 28px;
+        width: 34px;
+      }
+
+      h3 {
+        font-size: 22px;
+        margin: 0 0 10px;
+      }
+
+      .step p,
+      .audience-card p,
+      .faq-item p {
+        color: var(--muted);
+        line-height: 1.55;
+        margin: 0;
+      }
+
+      .split {
+        align-items: start;
+        display: grid;
+        gap: 30px;
+        grid-template-columns: 0.9fr 1.1fr;
+      }
+
+      .checker {
+        background: #12211d;
+        border-radius: 8px;
+        color: #ffffff;
+        overflow: hidden;
+      }
+
+      .checker-head {
+        align-items: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        display: flex;
+        justify-content: space-between;
+        padding: 18px;
+      }
+
+      .checker-body {
+        display: grid;
+        gap: 14px;
+        padding: 18px;
+      }
+
+      .candidate {
+        align-items: center;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.11);
+        border-radius: 8px;
+        display: grid;
+        gap: 14px;
+        grid-template-columns: 44px 1fr auto;
+        padding: 14px;
+      }
+
+      .candidate .avatar {
+        border-radius: 8px;
+        font-size: 16px;
+        height: 44px;
+        width: 44px;
+      }
+
+      .signal {
+        color: #9ff0d1;
+        font-weight: 850;
+      }
+
+      .faq {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      footer {
+        align-items: center;
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        display: flex;
+        justify-content: space-between;
+        margin: 0 auto;
+        max-width: 1160px;
+        padding: 28px 24px 42px;
+      }
+
+      @media (max-width: 920px) {
+        .hero,
+        .split,
+        .section-head {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 24px;
+        }
+
+        .preview-body,
+        .score-row,
+        .steps,
+        .audience,
+        .faq {
+          grid-template-columns: 1fr;
+        }
+
+        .preview {
+          min-height: 0;
+        }
+
+        .side {
+          display: none;
+        }
+
+        .section-head {
+          display: grid;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .nav-links a {
+          display: none;
+        }
+
+        .signup {
+          grid-template-columns: 1fr;
+        }
+
+        .signup input {
+          min-height: 44px;
+        }
+
+        .metric-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .candidate {
+          grid-template-columns: 44px 1fr;
+        }
+
+        .candidate .signal {
+          grid-column: 1 / -1;
+        }
+
+        footer {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <nav class="nav" aria-label="Main navigation">
+        <a class="brand" href="#top" aria-label="ProofLoop home">
+          <span class="mark" aria-hidden="true"></span>
+          <span>ProofLoop</span>
+        </a>
+        <div class="nav-links">
+          <a href="#how">How it works</a>
+          <a href="#teams">For teams</a>
+          <a href="#faq">FAQ</a>
+          <a class="button secondary" href="#start">Join waitlist</a>
+        </div>
+      </nav>
+
+      <main id="top">
+        <div class="hero">
+          <div>
+            <div class="kicker"><span class="pulse"></span> Private peer signals, public proof</div>
+            <h1>Turn workplace trust into a portable profile.</h1>
+            <p class="lead">
+              ProofLoop asks people who have worked with you for structured, private feedback, then creates a verified
+              reputation page recruiters can read in minutes.
+            </p>
+            <form class="signup" id="start">
+              <input aria-label="Work email" id="email" type="email" placeholder="Work email" required />
+              <button class="button" type="submit">Get early access</button>
+            </form>
+            <div class="hero-notes">
+              <span>Anonymous references</span>
+              <span>Verification-ready profile</span>
+              <span>No resume rewrite needed</span>
+            </div>
+          </div>
+
+          <aside class="preview" aria-label="ProofLoop profile preview">
+            <div class="preview-top">
+              <div class="window-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+              <strong>Candidate trust brief</strong>
+            </div>
+            <div class="preview-body">
+              <div class="side">
+                <div class="avatar">AL</div>
+                <p class="tiny">Verified profile</p>
+                <div class="name">Avery Lin</div>
+                <div class="menu">
+                  <div>Overview</div>
+                  <div>Peer signals</div>
+                  <div>Role fit</div>
+                  <div>Share link</div>
+                </div>
+              </div>
+
+              <div class="main-panel">
+                <div class="score-row">
+                  <div class="score-card">
+                    <div class="score-ring"><span>82</span></div>
+                    <p class="tiny">Trust score</p>
+                  </div>
+                  <div class="metric-grid">
+                    <div class="mini-card">
+                      <span class="tiny">Collaborator confidence</span>
+                      <b>94%</b>
+                      <div class="bar"><span style="width: 94%"></span></div>
+                    </div>
+                    <div class="mini-card">
+                      <span class="tiny">Execution reliability</span>
+                      <b>88%</b>
+                      <div class="bar"><span style="width: 88%; background: var(--coral)"></span></div>
+                    </div>
+                    <div class="mini-card">
+                      <span class="tiny">Reference coverage</span>
+                      <b>11</b>
+                      <div class="bar"><span style="width: 76%; background: var(--lav)"></span></div>
+                    </div>
+                    <div class="mini-card">
+                      <span class="tiny">Recent signal</span>
+                      <b>29d</b>
+                      <div class="bar"><span style="width: 68%; background: var(--gold)"></span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="quote-card">
+                  <p class="quote">
+                    "Avery is the person teams pull into messy projects when clarity, taste, and follow-through all
+                    matter."
+                  </p>
+                  <div class="tags">
+                    <span class="tag">Cross-functional</span>
+                    <span class="tag">High ownership</span>
+                    <span class="tag">Calm under pressure</span>
+                  </div>
+                </div>
+
+                <div class="insight">
+                  <div class="icon">AI</div>
+                  <div>
+                    <strong>Signal summary</strong>
+                    <p class="tiny">
+                      8 of 11 peers independently mention strong judgment in ambiguous work. 6 mention fast recovery
+                      after scope changes.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        </div>
+
+        <section id="how">
+          <div class="band">
+            <div class="section-head">
+              <h2>A reputation loop that does the awkward asking for you.</h2>
+              <p class="section-copy">
+                ProofLoop separates feedback collection from self-promotion, so candidates get credible proof and
+                references stay comfortable.
+              </p>
+            </div>
+            <div class="steps">
+              <article class="step">
+                <div class="num">1</div>
+                <h3>Invite peers</h3>
+                <p>Add teammates, managers, clients, or collaborators. ProofLoop sends short, private prompts.</p>
+              </article>
+              <article class="step">
+                <div class="num">2</div>
+                <h3>Extract signals</h3>
+                <p>The system clusters repeated themes, checks recency, and separates praise from concrete evidence.</p>
+              </article>
+              <article class="step">
+                <div class="num">3</div>
+                <h3>Share proof</h3>
+                <p>Send a public profile link with anonymous quotes, scored dimensions, and verification context.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="teams">
+          <div class="band split">
+            <div>
+              <h2>Recruiters see patterns, not polished claims.</h2>
+              <p class="lead">
+                A ProofLoop profile helps hiring teams spot consistent strengths, likely role fit, and areas worth
+                probing in interviews.
+              </p>
+            </div>
+            <div class="checker">
+              <div class="checker-head">
+                <strong>Shortlist review</strong>
+                <span class="tiny">4 profiles checked</span>
+              </div>
+              <div class="checker-body">
+                <div class="candidate">
+                  <div class="avatar">AL</div>
+                  <div><strong>Avery Lin</strong><div class="tiny">Product lead candidate</div></div>
+                  <div class="signal">Strong fit</div>
+                </div>
+                <div class="candidate">
+                  <div class="avatar" style="background: linear-gradient(135deg, var(--coral), var(--gold))">MK</div>
+                  <div><strong>Mina Khan</strong><div class="tiny">Ops manager candidate</div></div>
+                  <div class="signal">Verify scope</div>
+                </div>
+                <div class="candidate">
+                  <div class="avatar" style="background: linear-gradient(135deg, var(--lav), var(--mint))">RJ</div>
+                  <div><strong>Remy Jones</strong><div class="tiny">Founding designer candidate</div></div>
+                  <div class="signal">High ownership</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="band">
+            <div class="audience">
+              <article class="audience-card">
+                <h3>For candidates</h3>
+                <p>Bring proof of how people experience working with you, especially when your best work is hard to show.</p>
+              </article>
+              <article class="audience-card">
+                <h3>For operators</h3>
+                <p>Build credibility across clients, fractional roles, and project-based work without chasing testimonials.</p>
+              </article>
+              <article class="audience-card">
+                <h3>For hiring teams</h3>
+                <p>Use structured reputation signals to ask sharper questions before making a reference call.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq">
+          <div class="band">
+            <div class="section-head">
+              <h2>Designed for trust from both sides.</h2>
+              <p class="section-copy">
+                The public profile is shareable, but the collection process keeps reviewers protected.
+              </p>
+            </div>
+            <div class="faq">
+              <article class="faq-item">
+                <h3>Are reviews anonymous?</h3>
+                <p>Public profiles show aggregated themes and approved excerpts. Reviewer identity can stay private.</p>
+              </article>
+              <article class="faq-item">
+                <h3>Can weak signals be hidden?</h3>
+                <p>The profile should be credible, so it shows confidence, coverage, and recency instead of only praise.</p>
+              </article>
+              <article class="faq-item">
+                <h3>Is this a resume replacement?</h3>
+                <p>No. It works beside a resume or portfolio by adding evidence from people who saw the work happen.</p>
+              </article>
+              <article class="faq-item">
+                <h3>Who controls the link?</h3>
+                <p>The candidate owns sharing. Teams can request access, but candidates choose what they publish.</p>
+              </article>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <strong>ProofLoop</strong>
+        <span>Portable proof for modern work.</span>
+      </footer>
+    </div>
+
+    <script>
+      document.querySelector(".signup").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const button = event.currentTarget.querySelector("button");
+        const input = document.querySelector("#email");
+        button.textContent = input.value ? "You're on the list" : "Enter your email";
+        if (input.value) input.value = "";
+      });
+    </script>
+  </body>
+</html>
